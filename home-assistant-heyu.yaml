@@ -1,0 +1,22 @@
+FROM homeassistant/home-assistant:latest
+
+# Install dev tools
+RUN apk add --update alpine-sdk nano
+
+# Grab latest heyu
+RUN wget -O heyu.zip https://github.com/HeyuX10Automation/heyu/archive/refs/tags/v2.10.3.zip
+RUN unzip heyu.zip
+
+# Build it (the 'darwin' configuration seems to work on Alpine)
+RUN cd heyu-2.10.3 && sh ./Configure darwin && make
+
+# Create spool directory
+RUN mkdir /var/tmp/heyu
+
+# Create config file so 'make install' doesn't try to interact
+RUN mkdir /etc/heyu
+# Change this to specify your CM11A or CM17A TTY
+RUN echo "TTY /dev/ttyUSB0" > /etc/heyu/x10.conf
+
+# Install heyu
+RUN cd heyu-2.10.3 && make install
